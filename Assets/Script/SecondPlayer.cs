@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
-public class SnakePlayer : MonoBehaviour
+public class SecondPlayer : MonoBehaviour
 {
-    private Vector2 dir = Vector2.up;
+    private Vector2 dir = Vector2.down;
     private List<Transform> _segments = new List<Transform>();
     public Transform segmentPrefab;
     private bool upInput, DownInput, leftInput, rightInput;
@@ -17,7 +16,6 @@ public class SnakePlayer : MonoBehaviour
     private Rigidbody2D rgbd2D;
     private int scoreCount;
     public Text scoreText;
-    public Text WinText;
     private float snakeFaceAngle;
     public GameObject pauseUI, gameOverUI;
     public string currentScene, MenuScene;
@@ -26,6 +24,7 @@ public class SnakePlayer : MonoBehaviour
     public Camera cam;
     // public GameObject segmentGameObject;
     public GameObject shield;
+    public Text WinText;
 
 
 
@@ -37,28 +36,37 @@ public class SnakePlayer : MonoBehaviour
         // rgbd2D = GetComponent<Rigidbody2D>();
         ResetState();
         scoreCount = 0;
-        snakeFaceAngle = -90f;
         Bounds bounds = this.wallArea.bounds;
         maxX = bounds.max.x;
         maxY = bounds.max.y;
         minX = bounds.min.x;
         minY = bounds.min.y;
 
+
+        snakeFaceAngle = 0f;
+
         // InvokeRepeating("Movement", 0.3f, 0.3f);
     }
 
-    private void Update()
+
+    void Update()
     {
 
-        upInput = Input.GetKeyDown(KeyCode.UpArrow);
-        DownInput = Input.GetKeyDown(KeyCode.DownArrow);
-        leftInput = Input.GetKeyDown(KeyCode.LeftArrow);
-        rightInput = Input.GetKeyDown(KeyCode.RightArrow);
+
+        upInput = Input.GetKeyDown(KeyCode.W);
+        DownInput = Input.GetKeyDown(KeyCode.S);
+        leftInput = Input.GetKeyDown(KeyCode.A);
+        rightInput = Input.GetKeyDown(KeyCode.D);
+
+
+
+        // upInput = Input.GetKeyDown(KeyCode.UpArrow);
+        // DownInput = Input.GetKeyDown(KeyCode.DownArrow);
+        // leftInput = Input.GetKeyDown(KeyCode.LeftArrow);
+        // rightInput = Input.GetKeyDown(KeyCode.RightArrow);
 
 
         changePos();
-
-
 
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -67,30 +75,9 @@ public class SnakePlayer : MonoBehaviour
             PauseButtonClick();
         }
 
+
     }
 
-
-
-
-    // void changePos()
-    // {
-    //     if (Input.GetKey(KeyCode.RightArrow) && (dir != Vector2.left))
-    //     {
-    //         dir = Vector2.right * new Vector2(speed, dir.y);
-    //     }
-    //     else if (Input.GetKey(KeyCode.DownArrow) && (dir != Vector2.up))
-    //     {
-    //         dir = Vector2.down * new Vector2(dir.x, -speed);
-    //     } // '-up' means 'down'
-    //     else if (Input.GetKey(KeyCode.LeftArrow) && (dir != Vector2.right))
-    //     {
-    //         dir = Vector2.left * new Vector2(-speed, dir.y);
-    //     }// '-right' means 'left'
-    //     else if (Input.GetKey(KeyCode.UpArrow) && (dir != Vector2.down))
-    //     {
-    //         dir = Vector2.up * new Vector2(dir.x, speed);
-    //     }
-    // }
 
     private void changePos()
     {
@@ -101,6 +88,7 @@ public class SnakePlayer : MonoBehaviour
         }
         else if (DownInput && (dir != Vector2.up))
         {
+
             dir = Vector2.down;
 
             snakeFaceAngle = 180f;
@@ -121,24 +109,20 @@ public class SnakePlayer : MonoBehaviour
         this.transform.eulerAngles = new Vector3(0, 0, snakeFaceAngle);
     }
 
+    private void FixedUpdate()
+    {
+        Movement();
+    }
 
 
     void Movement()
     {
-
-        // Save current position (gap will be here)
-        // v = transform.position;
-
-        // Move head into new direction (now there is a gap)
-
-        // transform.Translate(dir * speed * Time.deltaTime);
-
         ScreenWrap();
 
 
         for (int i = _segments.Count - 1; i > 0; i--)
         {
-            _segments[i].position = _segments[i - 1].position;// * speed;// * Time.deltaTime;
+            _segments[i].position = _segments[i - 1].position;
         }
 
 
@@ -178,10 +162,9 @@ public class SnakePlayer : MonoBehaviour
 
         transform.position = newPosition;
     }
-    private void FixedUpdate()
-    {
-        Movement();
-    }
+
+
+
 
 
     public void Grow()
@@ -191,7 +174,6 @@ public class SnakePlayer : MonoBehaviour
 
         segment.position = _segments[_segments.Count - 1].position;
         _segments.Add(segment);
-
 
     }
 
@@ -203,13 +185,12 @@ public class SnakePlayer : MonoBehaviour
             GameOver();
         }
         _segments.RemoveAt(_segments.Count - 1);
-
         cam.GetComponent<SpawingFood>().gainerCount--;
     }
 
+
     private void ResetState()
     {
-
         scoreCount = 0;
         ScoreChanger();
 
@@ -219,19 +200,17 @@ public class SnakePlayer : MonoBehaviour
         }
         _segments.Clear();
 
-        this.transform.position = Vector3.zero;
+        this.transform.position = new Vector3(-18f, 0f, 0f);
         _segments.Add(this.transform);
 
         for (int i = 1; i < this.intialSize; i++)
         {
-            // Transform t = Instantiate(this.segmentPrefab, _segments[_segments.Count - 1].position + new Vector3(dir.x, dir.y, 0f), Quaternion.identity);
-            // t.position = _segments[_segments.Count - 1].position + new Vector3(dir.x + 0.5f, dir.y + 0.5f, 0f);
-            _segments.Add(Instantiate(this.segmentPrefab));
-
+            _segments.Add(Instantiate(this.segmentPrefab, new Vector3(-18f, 0f, 0f), Quaternion.identity));
         }
 
 
     }
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -268,7 +247,7 @@ public class SnakePlayer : MonoBehaviour
             cam.GetComponent<PowerUpSpanner>().Start();
             ScoreChanger();
         }
-        else if (other.tag == "Obstacle")
+        else if (other.tag == "Obstacle2")
         {
             GameOver();
         }
@@ -282,22 +261,20 @@ public class SnakePlayer : MonoBehaviour
             cam.GetComponent<PowerUpSpanner>().Start();
             StartCoroutine("StartLayerCollision");
         }
-        else if (other.tag == "Obstacle2")
+        else if (other.tag == "Obstacle")
         {
             GameOver();
         }
-        // else if (other.tag == "Player2")
+        // else if (other.tag == "Player")
         // {
-        //     GameOver();
+        //     // GameOver();
         // }
-
 
     }
 
-
     void ScoreChanger()
     {
-        scoreText.text = "Player_1: " + scoreCount.ToString();
+        scoreText.text = "Player_2 : " + scoreCount.ToString();
     }
 
     IEnumerator StartLayerCollision()
@@ -334,9 +311,8 @@ public class SnakePlayer : MonoBehaviour
 
     void GameOver()
     {
-        // WinText.text = "Player 1 Win";
+        // WinText.text = "Player 2 Win";
         Time.timeScale = 0;
-
         gameOverUI.gameObject.SetActive(true);
         WinText.gameObject.SetActive(true);
 
@@ -344,80 +320,3 @@ public class SnakePlayer : MonoBehaviour
     }
 
 }//class
-
-
-// private void changePos()
-// {
-//     if (upInput && (dir != Vector2.down))
-//     {
-//         dir = Vector2.up;
-
-//         this.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-//     }
-//     else if (DownInput && (dir != Vector2.up))
-//     {
-//         dir = Vector2.down;
-//         this.transform.eulerAngles = new Vector3(0f, 0f, 180f);
-//     }
-//     else if (leftInput && (dir != Vector2.right))
-//     {
-//         dir = Vector2.left;
-//         this.transform.eulerAngles = new Vector3(0, 0, 90f);
-//     }
-//     else if (rightInput && (dir != Vector2.left))
-//     {
-//         dir = Vector2.right;
-//         this.transform.eulerAngles = new Vector3(0, 0, -90f);
-//     }
-// }
-
-
-
-
-// private void changePos()
-// {
-//     // if ((transform.position.x != maxX) || (transform.position.x != minX) ||
-//     //     (transform.position.y != maxY) || (transform.position.y != minY))
-//     // {
-//     if (upInput && (dir != Vector2.down) && ((transform.position.x != maxX) && (transform.position.x != minX)))
-//     {
-//         dir = Vector2.up;
-//         this.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-//     }
-//     else if (DownInput && (dir != Vector2.up) && ((transform.position.x != maxX) && (transform.position.x != minX)))
-//     {
-//         dir = Vector2.down;
-//         this.transform.eulerAngles = new Vector3(0f, 0f, 180f);
-//     }
-//     else if (leftInput && (dir != Vector2.right) && ((transform.position.y != maxY) && (transform.position.y != minY)))
-//     {
-//         dir = Vector2.left;
-//         this.transform.eulerAngles = new Vector3(0, 0, 90f);
-//     }
-//     else if (rightInput && (dir != Vector2.left) && ((transform.position.y != maxY) && (transform.position.y != minY)))
-//     {
-//         dir = Vector2.right;
-//         this.transform.eulerAngles = new Vector3(0, 0, -90f);
-//     }
-//     // }
-
-// }
-
-
-// void ScreenWrap()
-// {
-//     Vector3 newPosition = transform.position;
-
-//     if (newPosition.x > 23 || newPosition.x < -23)
-//     {
-//         newPosition.x = -newPosition.x;
-//     }
-
-//     if (newPosition.y > 11 || newPosition.y < -11)
-//     {
-//         newPosition.y = -newPosition.y;
-//     }
-
-//     transform.position = newPosition;
-// }
-
